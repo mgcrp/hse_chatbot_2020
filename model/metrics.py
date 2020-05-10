@@ -11,26 +11,18 @@ K предсказанных
 хотим метрику, которая говорит, что круто, если среди предсказанных товаров есть реальный
 '''
 
-def mnap_k(predictions, target, k=20):
-    U = len(predictions)
-    summ = 0
-    for i in range(U):
-        tar = target[i]
-        pr = predictions[i]
-        k1 = min(k, len(tar))
-        ru = list(map(lambda x: float(int(x in tar)), pr[:k]))
-        pu = []
-        for j in range(k):
-            pu.append(sum(ru[:(j + 1)]) / (j + 1))
-            
-        summ += sum(np.asarray(pu) * np.asarray(ru)) / k1
-        
-    return summ / U
+def hitrate(predictions, target, k=5):
+	U = len(predictions)
+	summ = 0
+	for i in range(U):
+		tar = target[i]
+		pr = predictions[i]
+		summ += np.sum(tar * pr) / tar.sum()
+	return summ / U
 	
 '''
 на сколько далеко выдаваемые категории находятся друг от друга
  в дереве категорий Yandex market
- (либо озона, пока - озон)
 '''
 def category_distance(category1, category2):
     if (category1 == category2):
@@ -51,12 +43,16 @@ def category_distance(category1, category2):
         return 3
     return 4
 	
-def diversiry(predictions):
+def diversity(predictions):
 	l = len(predictions)
 	distance = 0
+	max_distance = 4
 	for prediction in predictions:
+		predict_distance = 0
 		for i in range(len(prediction)):
 			for j in range(i + 1, len(prediction)):
-				dictance += category_distance(prediction[i], prediction[j])
+				predict_distance += category_distance(prediction[i], prediction[j]) / max_distance
+		predict_distance = predict_distance / max((len(prediction) * (len(prediction) + 1) / 2), 1)
+		distance += predict_distance
 	return distance / l
 	
