@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from models.product import getTopInCategory
 
 class model1():
-	def __init__(self, max_cost, min_cost = 0, k = 5, n = 1):
+	def __init__(self, k = 5, n = 1):
 		self.model = RandomForestClassifier()#criterion = ''
 		self.categories_ya = []
 		self.categories = []
@@ -16,8 +16,6 @@ class model1():
 		self.k = k
 		self.n = n
 		
-		self.min_cost = min_cost
-		self.max_cost = max_cost
 		self.categories_ya = pd.read_csv('data/categories_with_yandex.csv')
 
 		df = pd.read_csv('data/training_sample.csv')#, sep=';',encoding='cp1251')
@@ -62,7 +60,7 @@ class model1():
 
 		return out
 		
-	def get_gifts(self, X_test, hobby):
+	def get_gifts(self, X_test, hobby, max_cost = 10000, min_cost = 0):
 		df = self.get_categories(X_test)
 		gifts = pd.DataFrame()
 		for i in df[0]:
@@ -70,10 +68,10 @@ class model1():
 
 			try:
 				if (gifts.shape[0] != 0):
-					b = getTopInCategory(self.n, int(a), self.max_cost, min_price=self.min_cost, page=1) 
+					b = getTopInCategory(self.n, int(a), max_cost, min_price=min_cost, page=1) 
 					gifts = pd.concat([gifts, b], axis=0)
 				else:
-					gifts = getTopInCategory(self.n, int(a), self.max_cost, min_price=self.min_cost, page=1)
+					gifts = getTopInCategory(self.n, int(a), max_cost, min_price=min_cost, page=1)
 				#arr0 = np.append(arr0, a)
 			except:
 				continue
