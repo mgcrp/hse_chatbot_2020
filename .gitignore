@@ -41,4 +41,4 @@ Backup[ ]of[ ]*.numbers/
 # TG Bot
 .handler-saves/
 # Model files
-.sav
+*.sav
