@@ -11,7 +11,7 @@ from models.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
-FILENAME = 'C:/Users/msson/machine learning/курсовая/data/knn_model.sav'
+FILENAME = 'data/model3_saved.sav'
 
 age_norm = 12
 
