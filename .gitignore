@@ -40,3 +40,5 @@ Backup[ ]of[ ]*.key/
 Backup[ ]of[ ]*.numbers/
 # TG Bot
 .handler-saves/
+# Model files
+.sav
