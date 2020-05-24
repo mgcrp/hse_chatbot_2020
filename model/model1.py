@@ -1,5 +1,11 @@
 # -------------------- ИМПОРТЫ --------------------
 
+import os
+import sys
+
+sys.path.append("..")
+os.chdir("..")
+
 import pickle
 
 import numpy as np
@@ -8,8 +14,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from metrics import hitrate
-from product import getTopInCategory
+from model.metrics import hitrate
+from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 

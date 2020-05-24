@@ -1,5 +1,9 @@
 # ---------- IMPORTS ------------
 
+import sys
+
+sys.path.append("..")
+
 import telebot
 import requests as rq
 from io import BytesIO
@@ -7,9 +11,6 @@ from io import BytesIO
 from localization import ru_ru
 from market_utils import getDataByYandexID
 from model_utils import prepare_data, dummy_model
-
-import sys
-sys.path.append("/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/")
 
 from model.model3 import get_gifts
 
@@ -19,6 +20,7 @@ DEBUG = True
 LOCALE = ru_ru
 PROXY = {'https': 'socks5h://geek:socks@t.geekclass.ru:7777'}
 TELEGRAM_API_TOKEN = '1188075804:AAE9bnnSHpkCf6Pu00SZuxNxDt1pxIphTWQ'
+
 
 # ---------- FUNCTIONS ----------
 
@@ -351,7 +353,7 @@ def get_reason(message):
         bot.register_next_step_handler(message, get_reason)
 
 
-@bot.callback_query_handler(func=lambda call: call.data in ["sex","age","status","hobby","cost","reason","back"])
+@bot.callback_query_handler(func=lambda call: call.data in ["sex", "age", "status", "hobby", "cost", "reason", "back"])
 def get_menu_response(call):
     if call.data == "sex":
         keyboard = telebot.types.ReplyKeyboardMarkup()
@@ -398,7 +400,7 @@ def get_menu_response(call):
         start_message(call.message)
 
 
-@bot.callback_query_handler(func=lambda call: call.data in ["goto_market","goto_shop","try_another","new_gift"])
+@bot.callback_query_handler(func=lambda call: call.data in ["goto_market", "goto_shop", "try_another", "new_gift"])
 def responseToGift(call):
     global suggested_goods
     global current_suggestion
@@ -461,7 +463,7 @@ def responseToGift(call):
             f"------------------\n"
             f"Result will be recorded to PostreSQL DB"
         )
-        if current_suggestion < len(suggested_goods)-1:
+        if current_suggestion < len(suggested_goods) - 1:
             current_suggestion += 1
             showGift(msg1)
         else:

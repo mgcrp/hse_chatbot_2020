@@ -1,5 +1,11 @@
 # -------------------- ИМПОРТЫ --------------------
 
+import os
+import sys
+
+sys.path.append("..")
+os.chdir("..")
+
 import pickle
 
 import numpy as np
@@ -7,13 +13,11 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import NearestNeighbors
 
-import sys
-sys.path.append("..")
 from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
-FILENAME = '/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/model/model3_saved.sav'
+FILENAME = 'model/model3_saved.sav'
 
 age_norm = 12
 
@@ -35,6 +39,7 @@ social_connection = ['Друг', 'Коллега', 'Парень/девушка'
 
 columns = hobby + holiday + category + numeric  # + social_connection
 
+
 # -------------------- КЛАССЫ/ФУНКЦИИ --------------------
 
 
@@ -44,12 +49,12 @@ class model3():
 
         self.k = k
         self.n = n
-        self.y_train = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/model3_y_train.csv')
-        self.categories_ya = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/categories_with_yandex.csv')
-        self.categories = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/model1_cats.csv')  # y_train.unique()
+        self.y_train = pd.read_csv('data/model3_y_train.csv')
+        self.categories_ya = pd.read_csv('data/categories_with_yandex.csv')
+        self.categories = pd.read_csv('data/model1_cats.csv')  # y_train.unique()
 
     def predict(self, x_pred):
-        df = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/training_sample_unique.csv')
+        df = pd.read_csv('data/training_sample_unique.csv')
 
         self.y_train = df.cat_ya_id
 
@@ -66,7 +71,8 @@ class model3():
         for i in indices:
             for j in i:
                 k = self.y_train.iloc[j]
-                if (X_train1.iloc[j]['age'] < x_pred['age'].values[0] + 5 and x_pred['age'].values[0] - 5 < X_train1.iloc[j]['age']):
+                if ((X_train1.iloc[j]['age'] < x_pred['age'].values[0] + 5) and
+                    (x_pred['age'].values[0] - 5 < X_train1.iloc[j]['age'])):
                     if (x_pred['age'].values[0] > 12 / age_norm):
                         if (X_train.iloc[j]['man'] == x_pred['man'].values[0]):
                             ans.append(k)
@@ -106,12 +112,12 @@ def get_gifts(X_test, hobby=[], max_cost=10000, min_cost=0):
 
 
 def learn_model3():
-    df = pd.read_csv('C:/Users/msson/machine learning/курсовая/data/training_sample_unique.csv')
+    df = pd.read_csv('data/training_sample_unique.csv')
 
     y_train = df.cat_ya_id
 
     X_train = df.drop(['BU_Level4', 'name', 'cat_ya_id', 'cat_ya'], axis=1)
-    y_train.to_csv('C:/Users/msson/machine learning/курсовая/data/model3_y_train.csv', index=False)
+    y_train.to_csv('data/model3_y_train.csv', index=False)
 
     X_train1 = X_train[columns]
 

@@ -1,5 +1,11 @@
 # -------------------- ИМПОРТЫ --------------------
 
+import os
+import sys
+
+sys.path.append("..")
+os.chdir("..")
+
 import pickle
 
 import numpy as np
@@ -12,8 +18,8 @@ from sklearn.preprocessing import OneHotEncoder
 import keras
 import tensorflow as tf
 from keras.layers import Dense
-from metrics import hitrate
-from product import getTopInCategory
+from model.metrics import hitrate
+from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
@@ -84,7 +90,7 @@ def get_gifts(X_test, hobby=[], max_cost=10000, min_cost=0):
 
 
 def learn_model2:
-    df = pd.read_csv('training_sample.csv').fillna(0)
+    df = pd.read_csv('data/training_sample.csv').fillna(0)
 
     df = df.sample(frac=1)
 
