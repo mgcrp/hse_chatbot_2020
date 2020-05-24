@@ -1,4 +1,4 @@
-# import pandas as pd
+import pandas as pd
 
 
 def dummy_model(input):
@@ -6,7 +6,7 @@ def dummy_model(input):
 
 
 def prepare_data(sex, age, status, hobby, reason):
-    return {
+    return pd.Series({
         "man":                      1 if sex == "M" else 0,
         "woman":                    1 if sex == "F" else 0,
         "age":                      age,
@@ -25,6 +25,7 @@ def prepare_data(sex, age, status, hobby, reason):
         "IT":                       1 if "IT" in hobby else 0,
         "Цветоводство":             1 if "садоводство" in hobby else 0,
         "Видеомонтаж":              1 if "видеомонтаж" in hobby else 0,
+        "Рисование":                0,
         "Новый год":                1 if reason == "new_year" else 0,
         "День рождения":            1 if reason == "birthday" else 0,
         "23 февраля":               1 if (reason == "gender" and sex == "M") else 0,
@@ -32,4 +33,4 @@ def prepare_data(sex, age, status, hobby, reason):
         "Годовщина отношений":      1 if reason == "anniversary" else 0,
         "День Святого Валентина":   1 if reason == "valentine" else 0,
         "Вне праздника":            1 if reason == "other" else 0,
-    }
+    }).to_frame().T

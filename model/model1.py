@@ -8,9 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-# from metrics import hitrate
-from models.metrics import hitrate
-from models.product import getTopInCategory
+from metrics import hitrate
+from product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 

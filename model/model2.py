@@ -12,8 +12,8 @@ from sklearn.preprocessing import OneHotEncoder
 import keras
 import tensorflow as tf
 from keras.layers import Dense
-from models.metrics import hitrate
-from models.product import getTopInCategory
+from metrics import hitrate
+from product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 

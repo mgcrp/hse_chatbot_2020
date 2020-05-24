@@ -4,19 +4,21 @@ import telebot
 import requests as rq
 from io import BytesIO
 
-from locale import ru_ru
+from localization import ru_ru
 from market_utils import getDataByYandexID
 from model_utils import prepare_data, dummy_model
 
+import sys
+sys.path.append("/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/")
+
+from model.model3 import get_gifts
+
 # ---------- VARIABLES ----------
 
-PROXY = {'https': 'socks5h://geek:socks@t.geekclass.ru:7777'}
-TELEGRAM_API_TOKEN = '1188075804:AAE9bnnSHpkCf6Pu00SZuxNxDt1pxIphTWQ'
 DEBUG = True
 LOCALE = ru_ru
-USE_MODEL1 = False
-USE_MODEL2 = True
-
+PROXY = {'https': 'socks5h://geek:socks@t.geekclass.ru:7777'}
+TELEGRAM_API_TOKEN = '1188075804:AAE9bnnSHpkCf6Pu00SZuxNxDt1pxIphTWQ'
 
 # ---------- FUNCTIONS ----------
 
@@ -66,17 +68,17 @@ def send_get_menu(message):
                 f"• reason\t{reason[recipient_reason]}"
             )
 
-        suggested_goods = dummy_model(
+        suggested_goods = get_gifts(
             prepare_data(
                 sex[recipient_sex],
                 recipient_age,
                 recipient_status,
                 recipient_hobby,
                 recipient_reason
-            )
+            ), max_cost=recipient_cost, min_cost=0
         )
 
-        message = bot.send_message(chat_id, f"🎁Посмотри, что я нашел для тебя!\n")
+        message = bot.send_message(chat_id, f"🎁Посмотри, что я нашел для тебя!\n{suggested_goods}")
         showGift(message)
     else:
         keyboard = telebot.types.InlineKeyboardMarkup()
@@ -138,6 +140,7 @@ def showGift(message):
     global current_suggestion
     global suggested_keyboard
 
+    suggested_keyboard = []
     suggested_item = getDataByYandexID(suggested_goods[current_suggestion])
 
     img = BytesIO(rq.get(
@@ -449,7 +452,7 @@ def responseToGift(call):
             f"Result will be recorded to PostreSQL DB"
         )
     elif call.data == "try_another":
-        bot.send_message(
+        msg1 = bot.send_message(
             call.message.chat.id,
             f"------ DEBUG -----\n"
             f"------------------\n"
@@ -458,6 +461,16 @@ def responseToGift(call):
             f"------------------\n"
             f"Result will be recorded to PostreSQL DB"
         )
+        if current_suggestion < len(suggested_goods)-1:
+            current_suggestion += 1
+            showGift(msg1)
+        else:
+            bot.send_message(
+                call.message.chat.id,
+                f"------ DEBUG -----\n"
+                f"------------------\n"
+                f"Out of suggestions for now"
+            )
     elif call.data == "new_gift":
         start_message(call.message)
 

@@ -7,11 +7,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import NearestNeighbors
 
-from models.product import getTopInCategory
+import sys
+sys.path.append("..")
+from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
-FILENAME = 'data/model3_saved.sav'
+FILENAME = '/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/model/model3_saved.sav'
 
 age_norm = 12
 
@@ -42,13 +44,12 @@ class model3():
 
         self.k = k
         self.n = n
-        self.y_train = pd.read_csv('C:/Users/msson/machine learning/курсовая/data/model3_y_train.csv')
-        self.categories_ya = pd.read_csv('C:/Users/msson/machine learning/курсовая/data/categories_with_yandex.csv')
-        self.categories = pd.read_csv(
-            'C:/Users/msson/machine learning/курсовая/data/model1_cats.csv')  # y_train.unique()
+        self.y_train = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/model3_y_train.csv')
+        self.categories_ya = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/categories_with_yandex.csv')
+        self.categories = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/model1_cats.csv')  # y_train.unique()
 
     def predict(self, x_pred):
-        df = pd.read_csv('C:/Users/msson/machine learning/курсовая/data/training_sample_unique.csv')
+        df = pd.read_csv('/Users/mgcrp/Documents/GitHub/hse_chatbot_2020/data/training_sample_unique.csv')
 
         self.y_train = df.cat_ya_id
 
@@ -101,7 +102,7 @@ class model3():
 def get_gifts(X_test, hobby=[], max_cost=10000, min_cost=0):
     loaded_model = pickle.load(open(FILENAME, 'rb'))
     model = model3(loaded_model)
-    return model.get_gifts_(X_test, hobby, max_cost, min_cost)
+    return list(model.get_gifts_(X_test, hobby, max_cost, min_cost).id)
 
 
 def learn_model3():
