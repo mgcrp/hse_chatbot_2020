@@ -6,11 +6,14 @@ sys.path.append("..")
 
 import telebot
 import requests as rq
+import sqlalchemy as sa
+
 from io import BytesIO
 
 from localization import ru_ru
 from market_utils import getDataByYandexID
 from model_utils import prepare_data, dummy_model
+from sql_utils import pg_conn_string, execute_sql_safe
 
 from model.model3 import get_gifts
 
@@ -20,9 +23,38 @@ DEBUG = True
 LOCALE = ru_ru
 PROXY = {'https': 'socks5h://geek:socks@t.geekclass.ru:7777'}
 TELEGRAM_API_TOKEN = '1188075804:AAE9bnnSHpkCf6Pu00SZuxNxDt1pxIphTWQ'
+PG_ENGINE = sa.create_engine(pg_conn_string)
 
 
 # ---------- FUNCTIONS ----------
+
+
+def get_insert_command(user_reaction, model, category):
+    sex = {LOCALE["btn_sex_male"]: 'M', LOCALE["btn_sex_female"]: 'F'}
+    reason = {
+        LOCALE["btn_reason_any"]: 'other',
+        LOCALE["btn_reason_newYear"]: 'new_year',
+        LOCALE["btn_reason_gender"]: 'gender',
+        LOCALE["btn_reason_birthday"]: 'birthday'
+    }
+    return "INSERT INTO chatbot.dbo.user_reactions (telegram_id,telegram_username,telegram_first_name," + \
+           "telegram_last_name,telegram_language_code,recipient_sex,recipient_age,recipient_status," + \
+           "recipient_hobby,recipient_max_cost,recipient_reason,suggestion_model_id,suggestion_category_id," + \
+           "user_reaction) VALUES (" + \
+           str(user_id) + "," + \
+           f"'{user_username}'" + "," + \
+           (f"'{user_first_name}'" if user_first_name is not None else "NULL") + "," + \
+           (f"'{user_last_name}'" if user_last_name is not None else "NULL") + "," + \
+           (f"'{user_language_code}'" if user_language_code is not None else "NULL") + "," + \
+           f"'{sex[recipient_sex]}'" + "," + \
+           str(recipient_age) + "," + \
+           f"'{recipient_status}'" + "," + \
+           "'{" + ','.join(recipient_hobby) + "}'," + \
+           f"'{recipient_cost}'" + "," + \
+           f"'{reason[recipient_reason]}'" + "," + \
+           str(model) + "," + \
+           str(category) + "," + \
+           f"'{user_reaction}'" + ");"
 
 
 def send_get_menu(message):
@@ -143,7 +175,7 @@ def showGift(message):
     global suggested_keyboard
 
     suggested_keyboard = []
-    suggested_item = getDataByYandexID(suggested_goods[current_suggestion])
+    suggested_item = getDataByYandexID(suggested_goods[current_suggestion]['model'])
 
     img = BytesIO(rq.get(
         url=suggested_item['photo'],
@@ -209,12 +241,30 @@ suggested_goods = []
 current_suggestion = 0
 suggested_keyboard = []
 
+user_id = None
+user_username = None
+user_first_name = None
+user_last_name = None
+user_language_code = None
+
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
+    global user_id
+    global user_username
+    global user_first_name
+    global user_last_name
+    global user_language_code
+
     keyboard = telebot.types.ReplyKeyboardMarkup()
     keyboard.row(LOCALE['btn_start'])
     keyboard.row(LOCALE['btn_about'])
+
+    user_id = message.from_user.id
+    user_username = message.from_user.username
+    user_first_name = message.from_user.first_name
+    user_last_name = message.from_user.last_name
+    user_language_code = message.from_user.language_code
 
     bot.send_message(message.chat.id, LOCALE['msg_start'], reply_markup=keyboard)
     bot.register_next_step_handler(message, start_menu_response)
@@ -259,6 +309,19 @@ def get_sex(message):
 
 def get_age(message):
     global recipient_age
+
+    global user_id
+    global user_username
+    global user_first_name
+    global user_last_name
+    global user_language_code
+
+    user_id = message.from_user.id
+    user_username = message.from_user.username
+    user_first_name = message.from_user.first_name
+    user_last_name = message.from_user.last_name
+    user_language_code = message.from_user.language_code
+
     try:
         recipient_age = int(message.text)
         send_get_menu(message)
@@ -407,7 +470,7 @@ def responseToGift(call):
     global suggested_keyboard
 
     if call.data == "goto_market":
-        suggested_item = getDataByYandexID(suggested_goods[current_suggestion])
+        suggested_item = getDataByYandexID(suggested_goods[current_suggestion]['model'])
         keyboard = telebot.types.InlineKeyboardMarkup()
         suggested_keyboard[0] = telebot.types.InlineKeyboardButton(
             text=LOCALE['btn_goto_market'],
@@ -428,10 +491,24 @@ def responseToGift(call):
                 f"User liked the suggestion from the bot\n"
                 f"and used a link to go to Yandex.Market\n"
                 f"------------------\n"
-                f"Result will be recorded to PostreSQL DB"
+                f"Result will be recorded to PostreSQL DB\n"
+                f"telegram_user_id\t{user_id}\n"
+                f"telegram_user_username\t{user_username}\n"
+                f"telegram_user_first_name\t{user_first_name}\n"
+                f"telegram_user_last_name\t{user_last_name}\n"
+                f"telegram_user_language_code\t{user_language_code}\n"
             )
+        execute_sql_safe(
+            get_insert_command(
+                'goto_market',
+                suggested_goods[current_suggestion]['model'],
+                suggested_goods[current_suggestion]['category']
+            ),
+            PG_ENGINE,
+            f'log user info (user_id={user_id},item_num={current_suggestion})'
+        )
     elif call.data == "goto_shop":
-        suggested_item = getDataByYandexID(suggested_goods[current_suggestion])
+        suggested_item = getDataByYandexID(suggested_goods[current_suggestion]['model'])
         keyboard = telebot.types.InlineKeyboardMarkup()
         suggested_keyboard[1] = telebot.types.InlineKeyboardButton(
             text=LOCALE['btn_goto_link'],
@@ -444,28 +521,58 @@ def responseToGift(call):
             message_id=call.message.message_id,
             reply_markup=keyboard
         )
-        bot.send_message(
-            call.message.chat.id,
-            f"------ DEBUG -----\n"
-            f"------------------\n"
-            f"User liked the suggestion from the bot\n"
-            f"and used a link to go directly to the shop\n"
-            f"------------------\n"
-            f"Result will be recorded to PostreSQL DB"
+        if DEBUG:
+            bot.send_message(
+                call.message.chat.id,
+                f"------ DEBUG -----\n"
+                f"------------------\n"
+                f"User liked the suggestion from the bot\n"
+                f"and used a link to go directly to the shop\n"
+                f"------------------\n"
+                f"Result will be recorded to PostreSQL DB\n"
+                f"telegram_user_id\t{user_id}\n"
+                f"telegram_user_username\t{user_username}\n"
+                f"telegram_user_first_name\t{user_first_name}\n"
+                f"telegram_user_last_name\t{user_last_name}\n"
+                f"telegram_user_language_code\t{user_language_code}\n"
+            )
+        execute_sql_safe(
+            get_insert_command(
+                'goto_store',
+                suggested_goods[current_suggestion]['model'],
+                suggested_goods[current_suggestion]['category']
+            ),
+            PG_ENGINE,
+            f'log user info (user_id={user_id},item_num={current_suggestion})'
         )
     elif call.data == "try_another":
-        msg1 = bot.send_message(
-            call.message.chat.id,
-            f"------ DEBUG -----\n"
-            f"------------------\n"
-            f"User didn't like the suggestion from the bot\n"
-            f"and asked for another suggestion\n"
-            f"------------------\n"
-            f"Result will be recorded to PostreSQL DB"
+        if DEBUG:
+            bot.send_message(
+                call.message.chat.id,
+                f"------ DEBUG -----\n"
+                f"------------------\n"
+                f"User didn't like the suggestion from the bot\n"
+                f"and asked for another suggestion\n"
+                f"------------------\n"
+                f"Result will be recorded to PostreSQL DB\n"
+                f"telegram_user_id\t{user_id}\n"
+                f"telegram_user_username\t{user_username}\n"
+                f"telegram_user_first_name\t{user_first_name}\n"
+                f"telegram_user_last_name\t{user_last_name}\n"
+                f"telegram_user_language_code\t{user_language_code}\n"
+            )
+        execute_sql_safe(
+            get_insert_command(
+                'next_item',
+                suggested_goods[current_suggestion]['model'],
+                suggested_goods[current_suggestion]['category']
+            ),
+            PG_ENGINE,
+            f'log user info (user_id={user_id},item_num={current_suggestion})'
         )
         if current_suggestion < len(suggested_goods) - 1:
             current_suggestion += 1
-            showGift(msg1)
+            showGift(call.message)
         else:
             bot.send_message(
                 call.message.chat.id,

@@ -95,9 +95,11 @@ class model3():
             try:
                 if (gifts.shape[0] != 0):
                     b = getTopInCategory(self.n, int(float(i)), max_cost, min_price=min_cost, page=1)
+                    b['cat_id'] = int(float(i))
                     gifts = pd.concat([gifts, b], axis=0)
                 else:
                     gifts = getTopInCategory(self.n, int(float(i)), max_cost, min_price=min_cost, page=1)
+                    gifts['cat_id'] = int(float(i))
             except:
                 print('bad')
                 continue
@@ -108,7 +110,7 @@ class model3():
 def get_gifts(X_test, hobby=[], max_cost=10000, min_cost=0):
     loaded_model = pickle.load(open(FILENAME, 'rb'))
     model = model3(loaded_model)
-    return list(model.get_gifts_(X_test, hobby, max_cost, min_cost).id)
+    return list(model.get_gifts_(X_test, hobby, max_cost, min_cost).apply(lambda x: {'model':x.id, 'category':x.cat_id}, axis=1))
 
 
 def learn_model3():
