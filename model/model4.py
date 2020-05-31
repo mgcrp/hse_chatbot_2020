@@ -19,7 +19,7 @@ from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
-FILENAME = 'data/model4_saved.sav'
+FILENAME = 'model/model4_saved.sav'
 
 
 # -------------------- КЛАССЫ/ФУНКЦИИ --------------------
