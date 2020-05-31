@@ -73,8 +73,8 @@ class model3():
                 k = self.y_train.iloc[j]
                 if ((X_train1.iloc[j]['age'] < x_pred['age'].values[0] + 5) and
                     (x_pred['age'].values[0] - 5 < X_train1.iloc[j]['age'])):
-                    if (x_pred['age'].values[0] > 12 / age_norm):
-                        if (X_train.iloc[j]['man'] == x_pred['man'].values[0]):
+                    if x_pred['age'].values[0] > 12 / age_norm:
+                        if X_train.iloc[j]['man'] == x_pred['man'].values[0]:
                             ans.append(k)
                     else:
                         ans.append(k)

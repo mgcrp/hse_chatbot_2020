@@ -18,33 +18,32 @@ from sklearn.preprocessing import OneHotEncoder
 import keras
 import tensorflow as tf
 from keras.layers import Dense
-from model.metrics import hitrate
+
 from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
-FILENAME = 'data/finalized_model_2.sav'
+FILENAME_MODEL = 'data/finalized_model_2.json'
+FILENAME_WEIGHTS = 'data/finalized_model_2.h5'
+
 
 # -------------------- КЛАССЫ/ФУНКЦИИ --------------------
 
 
 class model2():
     def __init__(self, load_model, k=5, n=1):
-        self.model = load_model
-        self.categories_ya = []
-        self.categories = []
-        self.criterion = {}
         self.k = k
         self.n = n
+        self.criterion = {}
+        self.model = load_model
 
         self.categories_ya = pd.read_csv('data/categories_with_yandex.csv')
 
-        df = pd.read_csv('data/training_sample.csv').fillna(0)
-
-        self.categories = df.BU_Level4.unique()
+        df = pd.read_csv('data/training_sample_xgboost.csv').fillna(0)
+        self.categories = df.columns[26:]
 
     def predict(self, X_test):
-        return softmax(self.model.predict(X_test), axis=1)
+        return self.model.predict(X_test) / 10000000
 
     def get_first_k(self, pred):
         ind = len(self.categories) - self.k
@@ -55,7 +54,7 @@ class model2():
 
         first_k = self.get_first_k(pred)
         for i in range(first_k.shape[0]):
-            kk = max(first_k[i], 0.0001)
+            kk = first_k[i]
             pred[i][pred[i] >= kk] = 1
             pred[i][pred[i] < kk] = 0
 
@@ -73,7 +72,7 @@ class model2():
             a = np.asarray(self.categories_ya.loc[self.categories_ya['BU_Level4'] == i].yandex_category_id)[0]
 
             try:
-                if (gifts.shape[0] != 0):
+                if gifts.shape[0] != 0:
                     b = getTopInCategory(self.n, int(a), max_cost, min_price=min_cost, page=1)
                     gifts = pd.concat([gifts, b], axis=0)
                 else:
@@ -89,25 +88,44 @@ def get_gifts(X_test, hobby=[], max_cost=10000, min_cost=0):
     return model.get_gifts_(X_test, hobby, max_cost, min_cost)
 
 
-def learn_model2:
-    df = pd.read_csv('data/training_sample.csv').fillna(0)
+def learn_model2():
+    df = pd.read_csv('data/training_sample_xgboost.csv').fillna(0)
 
     df = df.sample(frac=1)
 
-    y_train = df.BU_Level4
-    self.categories = y_train.unique()
-    y_train = pd.get_dummies(y_train)
+    y_train = df[df.columns[26:]]
+    categories = df.columns[26:]
 
-    X_train = df.drop(['BU_Level4', 'ItemEAN'], axis=1)
+    X_train = df[df.columns[:26]]
 
     inputs = keras.Input(shape=(X_train.shape[1],), name='digits')
     x = Dense(100, activation='relu', name='dense_1')(inputs)
     x = Dense(250, activation='relu', name='dense_2')(x)
-    outputs = Dense(self.categories.size, name='predictions')(x)
-    self.model = keras.Model(inputs=inputs, outputs=outputs)
+    outputs = Dense(categories.size, name='predictions')(x)
+    model = keras.Model(inputs=inputs, outputs=outputs)
 
-    self.model.compile(optimizer='adam', loss=tf.nn.softmax_cross_entropy_with_logits, metrics=['accuracy'])
+    model.compile(optimizer='adam', loss=tf.nn.softmax_cross_entropy_with_logits, metrics=['accuracy'])
 
-    self.model.fit(X_train, y_train, epochs=25, batch_size=32, verbose=0)
+    model.fit(X_train, y_train, epochs=15, batch_size=64, verbose=0)
 
-    pickle.dump(model, open(FILENAME, 'wb'))
+    model_json = model.to_json()
+
+    with open(FILENAME_MODEL, "w") as json_file:
+        json_file.write(model_json)
+
+    model.save_weights(FILENAME_WEIGHTS)
+
+# Загрузка модели
+# from keras.models import load_model
+# from keras.models import model_from_json
+# from keras.models import load_model
+
+# json_file = open(FILENAME_MODEL, 'r')
+
+# loaded_model_json = json_file.read()
+# json_file.close()
+# loaded_model = model_from_json(loaded_model_json)
+
+# loaded_model.load_weights(FILENAME_WEIGHTS)
+
+# m = model2(loaded_model)

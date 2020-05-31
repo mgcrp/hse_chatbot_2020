@@ -26,24 +26,15 @@ FILENAME = 'data/model1_saved.sav'
 
 class model1():
     def __init__(self, load_model, k=5, n=1):
-        self.model = load_model
-        self.categories_ya = []
-        self.categories = []
-        self.criterion = {}
         self.k = k
         self.n = n
+        self.criterion = {}
+        self.model = load_model
 
         self.categories_ya = pd.read_csv('data/categories_with_yandex.csv')
 
         df = pd.read_csv('data/training_sample.csv')
-        y_train = df.BU_Level4
-        self.categories = y_train.unique()
-
-        #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-        #pred = self.predict(X_test)
-        #cat = self.get_categories(X_test)
-        #self.criterion['hitrate'] = hitrate(pred, np.asarray(y_test))
-        #self.criterion['diversity'] = diversity(cat)
+        self.categories = df.BU_Level4.unique()
 
     def predict(self, X_test):
         return np.asarray(self.model.predict_proba(X_test))[:, :, 1].T
@@ -96,12 +87,11 @@ def learn_model1():
 
     df = pd.read_csv('data/training_sample.csv')
     df = df.sample(frac=1)
-    #df = df[:1000]
 
     y_train = df.BU_Level4
     y_train = pd.get_dummies(y_train)
 
-    X_train = df.drop(['BU_Level4', 'ItemEAN', 'cat_ya_id', 'cat_ya'], axis=1)
+    x_train = df.drop(['BU_Level4', 'ItemEAN', 'cat_ya_id', 'cat_ya'], axis=1)
 
-    model.fit(X_train, y_train)
+    model.fit(x_train, y_train)
     pickle.dump(model, open(FILENAME, 'wb'))
