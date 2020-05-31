@@ -433,7 +433,7 @@ def menu_response_handler(call):
         STATE[_currentChatID]['current_stage'] = '2_reason'
         bot.send_message(_currentChatID, LOCALE['msg_getReason'], reply_markup=_keyboard)
     elif call.data == "back":
-        start_message(call.message)
+        start_handler(call.message)
 
 
 @bot.callback_query_handler(func=lambda call: call.data in ["goto_market", "goto_shop", "try_another", "new_gift"])
