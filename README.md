@@ -17,10 +17,10 @@
   * [Форма](https://forms.gle/DDhVYwSGFefYT6ke8) для прохождения опроса
   * [Гуглодок](https://docs.google.com/spreadsheets/d/1_DZeuWzxIIpELsrBTOqzYJ4WYNqROMs2v40WyyrqGwg) с данными из формы
   ---
-  * (Файл)[data/categories_with_yandex.csv] с категориями Яндекс.Маркет
-  * (Файл)[data/training_sample.csv] с полной обучающей выборкой
-  * (Файл)[data/training_sample_unique.csv] с обучающей выборкой, обобщенной до уникальных профилей
-  * (Файл)[data/training_sample_xgboost.csv] с обучающей выборкой для модели XGBoost
+  * [Файл](data/categories_with_yandex.csv) с категориями Яндекс.Маркет
+  * [Файл](data/training_sample.csv) с полной обучающей выборкой
+  * [Файл](data/training_sample_unique.csv) с обучающей выборкой, обобщенной до уникальных профилей
+  * [Файл](data/training_sample_xgboost.csv) с обучающей выборкой для модели XGBoost
   
 2. Модель
   * [Jupyter Notebook](experiments/models.ipynb) с экспериментами над моделями
