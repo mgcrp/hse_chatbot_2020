@@ -13,8 +13,11 @@
   * Гуглодок с данными из формы -  https://docs.google.com/spreadsheets/d/1_DZeuWzxIIpELsrBTOqzYJ4WYNqROMs2v40WyyrqGwg
   
 2. Модель
-  * [baseline](model/baseline.py)
-  * Тут будет описание модели 2
+  * [baseline](model/baseline.py) - Базовый вариант модели - Используется RandomForest
+  * [model1](model/model1.py) - Доработанная модель на основе RandomForest
+  * [model2](model/model2.py) - Модель на основе нейронной сети
+  * [model3](model/model3.py) - Модель на основе KNN
+  * [model4](model/model4.py) - Модель на основе XGBoost
   
 3. Данные от Яндекс.Маркет
   * Список категорий + метод их получения
