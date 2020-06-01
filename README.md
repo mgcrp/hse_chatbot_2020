@@ -36,7 +36,7 @@
     * **getTopInCategory** - Возвращает `n` первых по популярности товаров в категории `category_id` заданым ограничением по цене (сортировка по популярности на Яндекс.Маркет)
   * [market_utils.py](bot/market_utils.py)
     * **getDataByYandexID** - Возвращает информацию о товаре по введенному ID модели
-  * (Файл)[data/categories_with_yandex.csv] с категориями Яндекс.Маркет
+  * [Файл](data/categories_with_yandex.csv) с категориями Яндекс.Маркет
   
 4. Бот
   * [bot.py](bot/bot.py) - Главный файл бота
