@@ -1,4 +1,9 @@
 # -------------------- ИМПОРТЫ --------------------
+import os
+import sys
+
+sys.path.append("..")
+os.chdir("..")
 
 import numpy as np
 import pandas as pd
@@ -8,9 +13,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 
-#from metrics import hitrate
-from models.metrics import hitrate
-from models.product import getTopInCategory
+from model.metrics import hitrate
+from model.product import getTopInCategory
 
 # -------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ/КОНСТАНТЫ --------------------
 
@@ -26,11 +30,7 @@ holiday = [
     'Годовщина отношений', 'День Святого Валентина', 'Вне праздника'
 ]
 
-# numeric = ['age']
-# category = ['man', 'woman']
-# social_connection = ['Друг', 'Коллега', 'Парень/девушка', 'Мать/Отец', 'Родственник']
-
-columns = hobby + holiday  # + category + numeric + social_connection
+columns = hobby + holiday
 
 # -------------------- КЛАССЫ/ФУНКЦИИ --------------------
 
@@ -44,8 +44,8 @@ class baseline():
         self.min_cost = min_cost
         self.max_cost = max_cost
 
-        df_unique = pd.read_csv('C:/Users/msson/machine learning/курсовая/data/training_sample_unique.csv')
-        self.categories = pd.read_csv('C:/Users/msson/machine learning/курсовая/data/categories_with_yandex.csv')
+        df_unique = pd.read_csv('data/training_sample_unique.csv')
+        self.categories = pd.read_csv('data/categories_with_yandex.csv')
         df_unique = df_unique.sample(frac=1)
 
         self.df_unique = df_unique
@@ -61,13 +61,12 @@ class baseline():
         ans = []
         for ind, row in X_test.iterrows():
 
-            suitable_set = self.df_unique.loc[self.df_unique['age'] <
-                                              row.age + 2].loc[self.df_unique['age'] > row.age - 2]
+            suitable_set = self.df_unique.loc[self.df_unique['age'] < row.age + 2].loc[self.df_unique['age'] > row.age - 2]
             test = suitable_set
             for i in row.index.values:
-                if (row[i] == 0):
+                if row[i] == 0:
                     test = test.loc[test[i] == 0]
-            if (test.shape[0] > self.k):
+            if test.shape[0] > self.k:
                 test['sum'] = test[columns].sum(axis=1)
                 test = test.loc[test['sum'] > 0]
             ans.append([test[:self.k]['BU_Level4'].values])
@@ -85,7 +84,6 @@ class baseline():
                     gifts = pd.concat([gifts, b], axis=0)
                 else:
                     gifts = getTopInCategory(1, int(a), 1000, min_price=0, page=1)
-                #arr0 = np.append(arr0, a)
             except:
                 continue
         return gifts
