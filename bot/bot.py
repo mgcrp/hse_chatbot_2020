@@ -81,6 +81,8 @@ def show_menu(message):
             (STATE[_currentChatID]['recipient_reason'] is not None)
     )
     if _flagAllNotNone:
+        STATE[_currentChatID]['current_stage'] = '3_review'
+
         sex = {LOCALE["btn_sex_male"]: 'M', LOCALE["btn_sex_female"]: 'F'}
         reason = {
             LOCALE["btn_reason_any"]: 'other',
@@ -257,9 +259,10 @@ STATE = {}
 
 @bot.message_handler(commands=['start'])
 def start_handler(message):
-
     global STATE
+
     _currentChatID = message.chat.id
+
     STATE[_currentChatID] = {}
     STATE[_currentChatID]['user_id'] = message.from_user.id
     STATE[_currentChatID]['user_username'] = message.from_user.username
@@ -292,6 +295,11 @@ def text_handler(message):
     global STATE
 
     _currentChatID = message.chat.id
+
+    if _currentChatID not in STATE:
+        bot.send_message(_currentChatID, LOCALE['msg_error_sessionNotStarted'])
+        return
+
     _currentUserStage = STATE[_currentChatID]['current_stage']
 
     if _currentUserStage == '1_start' and message.text.lower() == LOCALE['btn_about'].lower():
@@ -302,34 +310,43 @@ def text_handler(message):
     elif _currentUserStage == '2_sex':
         if message.text == LOCALE['btn_sex_male']:
             STATE[_currentChatID]['recipient_sex'] = LOCALE['btn_sex_male']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_sex_female']:
             STATE[_currentChatID]['recipient_sex'] = LOCALE['btn_sex_female']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
     elif _currentUserStage == '2_age':
         try:
             STATE[_currentChatID]['recipient_age'] = int(message.text)
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         except Exception:
             bot.send_message(_currentChatID, LOCALE["msg_getAge"])
     elif _currentUserStage == '2_status':
         if message.text == LOCALE['btn_status_random']:
             STATE[_currentChatID]['recipient_status'] = LOCALE['btn_status_random']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_status_friend']:
             STATE[_currentChatID]['recipient_status'] = LOCALE['btn_status_friend']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_status_colleague']:
             STATE[_currentChatID]['recipient_status'] = LOCALE['btn_status_colleague']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_status_date']:
             STATE[_currentChatID]['recipient_status'] = LOCALE['btn_status_date']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_status_relative']:
             STATE[_currentChatID]['recipient_status'] = LOCALE['btn_status_relative']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
     elif _currentUserStage == '2_hobby':
         if message.text == LOCALE['btn_hobby_end']:
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_hobby_reading']:
             STATE[_currentChatID]['recipient_hobby'].append('чтение')
@@ -362,21 +379,26 @@ def text_handler(message):
     elif _currentUserStage == '2_cost':
         try:
             STATE[_currentChatID]['recipient_cost'] = int(message.text)
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         except Exception:
             bot.send_message(message.from_user.id, LOCALE["msg_getCost"])
     elif _currentUserStage == '2_reason':
         if message.text == LOCALE['btn_reason_any']:
             STATE[_currentChatID]['recipient_reason'] = LOCALE['btn_reason_any']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_reason_newYear']:
             STATE[_currentChatID]['recipient_reason'] = LOCALE['btn_reason_newYear']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_reason_gender']:
             STATE[_currentChatID]['recipient_reason'] = LOCALE['btn_reason_gender']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
         elif message.text == LOCALE['btn_reason_birthday']:
             STATE[_currentChatID]['recipient_reason'] = LOCALE['btn_reason_birthday']
+            STATE[_currentChatID]['current_stage'] = '2_input'
             show_menu(message)
     print(STATE)
 
@@ -386,6 +408,10 @@ def menu_response_handler(call):
     global STATE
 
     _currentChatID = call.message.chat.id
+
+    if _currentChatID not in STATE:
+        bot.send_message(_currentChatID, LOCALE['msg_error_sessionNotStarted'])
+        return
 
     if call.data == "sex":
         _keyboard = telebot.types.ReplyKeyboardMarkup()
@@ -441,6 +467,10 @@ def item_response_handler(call):
     global STATE
 
     _currentChatID = call.message.chat.id
+
+    if _currentChatID not in STATE:
+        bot.send_message(_currentChatID, LOCALE['msg_error_sessionNotStarted'])
+        return
 
     if call.data == "goto_market":
         _suggestedItem = getDataByYandexID(
@@ -537,6 +567,11 @@ def item_response_handler(call):
             f"log user info (user_id={STATE[_currentChatID]['user_id']},item_num={STATE[_currentChatID]['suggestion_current']})"
         )
     elif call.data == "try_another":
+        bot.edit_message_reply_markup(
+            chat_id=_currentChatID,
+            message_id=call.message.message_id,
+            reply_markup=None
+        )
         if DEBUG:
             bot.send_message(
                 call.message.chat.id,
