@@ -13,7 +13,7 @@
   * Гуглодок с данными из формы -  https://docs.google.com/spreadsheets/d/1_DZeuWzxIIpELsrBTOqzYJ4WYNqROMs2v40WyyrqGwg
   
 2. Модель
-  * (baseline)[model/baseline.py]
+  * [baseline](model/baseline.py)
   * Тут будет описание модели 2
   
 3. Данные от Яндекс.Маркет
