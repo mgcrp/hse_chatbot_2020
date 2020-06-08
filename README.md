@@ -59,3 +59,8 @@
 * Заезд бота на хостинг
 * Организация хранения данных в PostgreSQL на сервере
 * Переезд бота с pooling запросов на webhook
+
+### Подготовка документов к защите:
+
+* Отчет - https://docs.google.com/document/d/1P5ojkNCc3fNp7R-CvdHpOipGpXzmPl8k0NJ3X7lEXYM/edit#
+* Презентация - https://docs.google.com/presentation/d/11jDw1hQw3WjyjedcYsNhOgY3tE9jEi0u2jh64O0eQzE/edit#slide=id.p1
